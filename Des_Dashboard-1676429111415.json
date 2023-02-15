@@ -1,0 +1,1843 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_MYSQL",
+      "label": "MySQL",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "mysql",
+      "pluginName": "MySQL"
+    }
+  ],
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "panel",
+      "id": "gauge",
+      "name": "Gauge",
+      "version": ""
+    },
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "9.3.2"
+    },
+    {
+      "type": "datasource",
+      "id": "mysql",
+      "name": "MySQL",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "piechart",
+      "name": "Pie chart",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "${DS_MYSQL}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Post Conversion Hours spent"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pre Conversion Hours spent"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Production Ticket Hours spent"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Trial Ticket Hours spent"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#d58dd9",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 16,
+      "options": {
+        "displayLabels": [
+          "percent",
+          "value"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ],
+          "width": 1
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.3.2",
+      "targets": [
+        {
+          "dataset": "grafana_data",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_MYSQL}"
+          },
+          "dimensions": {},
+          "editorMode": "code",
+          "expression": "",
+          "format": "table",
+          "id": "",
+          "label": "",
+          "matchExact": true,
+          "metricEditorMode": 0,
+          "metricName": "",
+          "metricQueryType": 0,
+          "namespace": "",
+          "period": "",
+          "queryMode": "Metrics",
+          "rawQuery": true,
+          "rawSql": "SELECT  jt.source_systems, jt.`type`, jt.status, \r\n SUM(IF(jt.resolved > 0, jw.duration/3600 , 0 )) AS 'Trial Ticket Hours spent'\r\nFROM grafana_data.jira_worklogs jw \r\nLEFT JOIN grafana_data.jira_tickets jt ON jw.jiraticketid = jt.id\r\nWHERE jt.ticketnumber LIKE 'CONV-%'\r\nAND jt.`type` LIKE 'Pre Conversion Data Fix%'\r\nAND jt.source_systems IN ($SourceSystem)\r\nAND status IN ($Status)\r\nAND CAST(CONCAT(YEAR(FROM_UNIXTIME(jt.created)), IF(WEEK(FROM_UNIXTIME(jt.created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(jt.created))), WEEK(FROM_UNIXTIME(jt.created)))) AS SIGNED) >= CAST(CONCAT('$FROM_YEAR', LPAD('$FROM_ISO_WEEK', 2, '0')) AS SIGNED)\r\nAND CAST(CONCAT(YEAR(FROM_UNIXTIME(jt.created)), IF(WEEK(FROM_UNIXTIME(jt.created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(jt.created))), WEEK(FROM_UNIXTIME(jt.created)))) AS SIGNED) <= CAST(CONCAT('$TO_YEAR', LPAD('$TO_ISO_WEEK', 2, '0')) AS SIGNED)\r\n",
+          "refId": "A",
+          "region": "default",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "sqlExpression": "",
+          "statistic": "Average",
+          "table": "jira_tickets"
+        },
+        {
+          "dataset": "grafana_data",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_MYSQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT  jt.source_systems, jt.`type`, jt.status, \r\n SUM(IF(jt.resolved > 0, jw.duration/3600 , 0 )) AS 'Production Ticket Hours spent'\r\nFROM grafana_data.jira_worklogs jw \r\nLEFT JOIN grafana_data.jira_tickets jt ON jw.jiraticketid = jt.id\r\nWHERE jt.ticketnumber LIKE 'CONV-%'\r\nAND jt.`type` LIKE 'Post Conversion Data Fix%'\r\nAND jt.source_systems IN ($SourceSystem)\r\nAND status IN ($Status)\r\nAND CAST(CONCAT(YEAR(FROM_UNIXTIME(jt.created)), IF(WEEK(FROM_UNIXTIME(jt.created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(jt.created))), WEEK(FROM_UNIXTIME(jt.created)))) AS SIGNED) >= CAST(CONCAT('$FROM_YEAR', LPAD('$FROM_ISO_WEEK', 2, '0')) AS SIGNED)\r\nAND CAST(CONCAT(YEAR(FROM_UNIXTIME(jt.created)), IF(WEEK(FROM_UNIXTIME(jt.created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(jt.created))), WEEK(FROM_UNIXTIME(jt.created)))) AS SIGNED) <= CAST(CONCAT('$TO_YEAR', LPAD('$TO_ISO_WEEK', 2, '0')) AS SIGNED)",
+          "refId": "B",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "jira_tickets"
+        },
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_MYSQL}"
+          },
+          "hide": false,
+          "refId": "C"
+        }
+      ],
+      "title": "Hours allocated: $SourceSystem, $FROM_YEAR W$FROM_ISO_WEEK - $TO_YEAR W$TO_ISO_WEEK",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "${DS_MYSQL}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Production Tickets"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#f2495e",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Trial Tickets"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#ce8dd9",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 14,
+      "options": {
+        "displayLabels": [
+          "value",
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.3.2",
+      "targets": [
+        {
+          "dataset": "grafana_data",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_MYSQL}"
+          },
+          "dimensions": {},
+          "editorMode": "code",
+          "expression": "",
+          "format": "table",
+          "id": "",
+          "label": "",
+          "matchExact": true,
+          "metricEditorMode": 0,
+          "metricName": "",
+          "metricQueryType": 0,
+          "namespace": "",
+          "period": "",
+          "queryMode": "Metrics",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(jt.ticketnumber) AS 'Trial Tickets', jt.source_systems, jt.`type` \r\nFROM grafana_data.jira_worklogs jw \r\nLEFT JOIN grafana_data.jira_tickets jt ON jw.jiraticketid = jt.id\r\nWHERE jt.ticketnumber LIKE 'CONV-%'\r\nAND jt.`type` LIKE 'Pre Conversion Data Fix%'\r\nAND jt.source_systems IN ($SourceSystem)\r\nAND jt.status IN ($Status)\r\nAND CAST(CONCAT(YEAR(FROM_UNIXTIME(jt.created)), IF(WEEK(FROM_UNIXTIME(jt.created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(jt.created))), WEEK(FROM_UNIXTIME(jt.created)))) AS SIGNED) >= CAST(CONCAT('$FROM_YEAR', LPAD('$FROM_ISO_WEEK', 2, '0')) AS SIGNED)\r\nAND CAST(CONCAT(YEAR(FROM_UNIXTIME(jt.created)), IF(WEEK(FROM_UNIXTIME(jt.created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(jt.created))), WEEK(FROM_UNIXTIME(jt.created)))) AS SIGNED) <= CAST(CONCAT('$TO_YEAR', LPAD('$TO_ISO_WEEK', 2, '0')) AS SIGNED)",
+          "refId": "A",
+          "region": "default",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "sqlExpression": "",
+          "statistic": "Average",
+          "table": "jira_tickets"
+        },
+        {
+          "dataset": "grafana_data",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_MYSQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(jt.ticketnumber) AS 'Production Tickets', jt.source_systems, jt.`type` FROM grafana_data.jira_worklogs jw \r\nLEFT JOIN grafana_data.jira_tickets jt ON jw.jiraticketid = jt.id\r\nWHERE jt.ticketnumber LIKE 'CONV-%'\r\nAND jt.`type` LIKE 'Post Conversion Data Fix%'\r\nAND jt.source_systems IN ($SourceSystem)\r\nAND jt.status IN ($Status)\r\nAND CAST(CONCAT(YEAR(FROM_UNIXTIME(jt.created)), IF(WEEK(FROM_UNIXTIME(jt.created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(jt.created))), WEEK(FROM_UNIXTIME(jt.created)))) AS SIGNED) >= CAST(CONCAT('$FROM_YEAR', LPAD('$FROM_ISO_WEEK', 2, '0')) AS SIGNED)\r\nAND CAST(CONCAT(YEAR(FROM_UNIXTIME(jt.created)), IF(WEEK(FROM_UNIXTIME(jt.created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(jt.created))), WEEK(FROM_UNIXTIME(jt.created)))) AS SIGNED) <= CAST(CONCAT('$TO_YEAR', LPAD('$TO_ISO_WEEK', 2, '0')) AS SIGNED)",
+          "refId": "B",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "jira_tickets"
+        }
+      ],
+      "title": "Trial/Production Tickets Created: $SourceSystem, $FROM_YEAR W$FROM_ISO_WEEK - $TO_YEAR W$TO_ISO_WEEK",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "${DS_MYSQL}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisWidth": 30,
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 89,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 5,
+            "pointSize": 7,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 1,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Post-Conversion"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pre-Conversion"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "id": 22,
+      "options": {
+        "legend": {
+          "calcs": [
+            "stdDev",
+            "mean",
+            "max",
+            "count",
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "dataset": "grafana_data",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_MYSQL}"
+          },
+          "dimensions": {},
+          "editorMode": "code",
+          "expression": "",
+          "format": "table",
+          "id": "",
+          "label": "",
+          "matchExact": true,
+          "metricEditorMode": 0,
+          "metricName": "",
+          "metricQueryType": 0,
+          "namespace": "",
+          "period": "",
+          "queryMode": "Metrics",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  DATE(FROM_UNIXTIME(jt.created)) AS \"Created Date\", source_systems,\r\n  COUNT(*) AS 'Pre-Conversion'\r\nFROM \r\n  grafana_data.jira_tickets jt\r\nWHERE jt.type = 'Pre Conversion Data Fix'\r\nAND source_systems IN ($SourceSystem )\r\nAND status IN ($Status)\r\nAND CAST(CONCAT(YEAR(FROM_UNIXTIME(created)), IF(WEEK(FROM_UNIXTIME(created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(created))), WEEK(FROM_UNIXTIME(created)))) AS SIGNED) >= CAST(CONCAT('$FROM_YEAR', LPAD('$FROM_ISO_WEEK', 2, '0')) AS SIGNED)\r\nAND CAST(CONCAT(YEAR(FROM_UNIXTIME(created)), IF(WEEK(FROM_UNIXTIME(created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(created))), WEEK(FROM_UNIXTIME(created)))) AS SIGNED) <= CAST(CONCAT('$TO_YEAR', LPAD('$TO_ISO_WEEK', 2, '0')) AS SIGNED)\r\nGROUP BY date(FROM_UNIXTIME(jt.created))\r\n",
+          "refId": "A",
+          "region": "default",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "sqlExpression": "",
+          "statistic": "Average",
+          "table": "jira_tickets"
+        },
+        {
+          "dataset": "grafana_data",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_MYSQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  DATE(FROM_UNIXTIME(jt.created)) AS \"Created Date\",\r\n  COUNT(*) AS 'Post-Conversion'\r\nFROM \r\n  grafana_data.jira_tickets jt\r\nWHERE jt.type = 'Post Conversion Data Fix'\r\nAND source_systems IN ($SourceSystem )\r\nAND CAST(CONCAT(YEAR(FROM_UNIXTIME(created)), IF(WEEK(FROM_UNIXTIME(created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(created))), WEEK(FROM_UNIXTIME(created)))) AS SIGNED) >= CAST(CONCAT('$FROM_YEAR', LPAD('$FROM_ISO_WEEK', 2, '0')) AS SIGNED)\r\nAND CAST(CONCAT(YEAR(FROM_UNIXTIME(created)), IF(WEEK(FROM_UNIXTIME(created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(created))), WEEK(FROM_UNIXTIME(created)))) AS SIGNED) <= CAST(CONCAT('$TO_YEAR', LPAD('$TO_ISO_WEEK', 2, '0')) AS SIGNED)\r\nGROUP BY date(FROM_UNIXTIME(jt.created))",
+          "refId": "B",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "jira_tickets"
+        }
+      ],
+      "title": "Trends Over Time",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "${DS_MYSQL}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Infinity Done CONV-24951"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "VTech No Work Required CONV-25058"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Vision Done CONV-27124"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "AVIMark Done CONV-25043"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cornerstone No Work Required CONV-25521"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Ezvetpro Done CONV-25258"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "VetPort Done CONV-25865"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Avimark"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Infinity"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cornerstone"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "DVMax"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "AlisVet"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 18,
+      "options": {
+        "displayLabels": [
+          "percent",
+          "value"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "",
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.3.2",
+      "targets": [
+        {
+          "dataset": "grafana_data",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_MYSQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT source_systems, COUNT(ticketnumber) AS 'numberOfTIckets', FROM_UNIXTIME(created), FROM_UNIXTIME(resolved)\r\nFROM grafana_data.jira_tickets \r\nWHERE ticketnumber LIKE 'CONV-%'\r\nAND `type` LIKE 'Pre Conversion Data Fix%'\r\nAND epic IS NOT NULL\r\nAND source_systems <> ''\r\nAND source_systems IN ($SourceSystem)\r\nAND status IN ($Status)\r\nAND CAST(CONCAT(YEAR(FROM_UNIXTIME(created)), IF(WEEK(FROM_UNIXTIME(created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(created))), WEEK(FROM_UNIXTIME(created)))) AS SIGNED) >= CAST(CONCAT('$FROM_YEAR', LPAD('$FROM_ISO_WEEK', 2, '0')) AS SIGNED)\r\nAND CAST(CONCAT(YEAR(FROM_UNIXTIME(created)), IF(WEEK(FROM_UNIXTIME(created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(created))), WEEK(FROM_UNIXTIME(created)))) AS SIGNED) <= CAST(CONCAT('$TO_YEAR', LPAD('$TO_ISO_WEEK', 2, '0')) AS SIGNED)\r\nGROUP BY source_systems ",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "jira_tickets"
+        }
+      ],
+      "title": "Trial Tickets per Source System ",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "${DS_MYSQL}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Infinity No Work Required CONV-23382"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "VTech No Work Required CONV-20054"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cornerstone Needs Info CONV-5192"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vetinform Done CONV-22206"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Avimark Done CONV-23986"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Teleos Done CONV-25349"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cornerstone"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "AVIMark"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Infinity"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "DVMax8"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ezyVet"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#00fffe",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 20,
+      "options": {
+        "displayLabels": [
+          "percent",
+          "value"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "percent",
+            "value"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^numberOfTIckets$/",
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "dataset": "grafana_data",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_MYSQL}"
+          },
+          "dimensions": {},
+          "editorMode": "code",
+          "expression": "",
+          "format": "table",
+          "id": "",
+          "label": "",
+          "matchExact": true,
+          "metricEditorMode": 0,
+          "metricName": "",
+          "metricQueryType": 0,
+          "namespace": "",
+          "period": "",
+          "queryMode": "Metrics",
+          "rawQuery": true,
+          "rawSql": "SELECT source_systems, COUNT(ticketnumber) AS 'numberOfTIckets', FROM_UNIXTIME(created), FROM_UNIXTIME(resolved)\r\nFROM grafana_data.jira_tickets \r\nWHERE ticketnumber LIKE 'CONV-%'\r\nAND `type` LIKE 'Post Conversion Data Fix%'\r\nAND epic IS NOT NULL\r\nAND source_systems <> ''\r\nAND source_systems IN ($SourceSystem)\r\nAND status IN ($Status)\r\nAND CAST(CONCAT(YEAR(FROM_UNIXTIME(created)), IF(WEEK(FROM_UNIXTIME(created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(created))), WEEK(FROM_UNIXTIME(created)))) AS SIGNED) >= CAST(CONCAT('$FROM_YEAR', LPAD('$FROM_ISO_WEEK', 2, '0')) AS SIGNED)\r\nAND CAST(CONCAT(YEAR(FROM_UNIXTIME(created)), IF(WEEK(FROM_UNIXTIME(created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(created))), WEEK(FROM_UNIXTIME(created)))) AS SIGNED) <= CAST(CONCAT('$TO_YEAR', LPAD('$TO_ISO_WEEK', 2, '0')) AS SIGNED)\r\nGROUP BY source_systems ",
+          "refId": "A",
+          "region": "default",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "sqlExpression": "",
+          "statistic": "Average",
+          "table": "jira_tickets"
+        }
+      ],
+      "title": "Production Tickets per Source System",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "${DS_MYSQL}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "center",
+            "displayMode": "auto",
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 12,
+        "x": 0,
+        "y": 25
+      },
+      "id": 10,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "2019"
+          }
+        ]
+      },
+      "pluginVersion": "9.3.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_MYSQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n\tDISTINCT \r\n\tYEAR(FROM_UNIXTIME(created)) AS `Year`,\r\n\tWEEK(FROM_UNIXTIME(created)) AS `Week`,\r\n\tCAST(CONCAT(YEAR(FROM_UNIXTIME(created)), IF(WEEK(FROM_UNIXTIME(created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(created))), WEEK(FROM_UNIXTIME(created)))) AS SIGNED) AS 'value'\r\nFROM\r\n\tgrafana_data.jira_tickets jt\r\n\tWHERE\r\n\tCAST(CONCAT(YEAR(FROM_UNIXTIME(created)), IF(WEEK(FROM_UNIXTIME(created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(created))), WEEK(FROM_UNIXTIME(created)))) AS SIGNED) >= CAST(CONCAT('$FROM_YEAR', LPAD('$FROM_ISO_WEEK', 2, '0')) AS SIGNED)\r\n\tAND \r\n\tCAST(CONCAT(YEAR(FROM_UNIXTIME(created)), IF(WEEK(FROM_UNIXTIME(created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(created))), WEEK(FROM_UNIXTIME(created)))) AS SIGNED) <= CAST(CONCAT('$TO_YEAR', LPAD('$TO_ISO_WEEK', 2, '0')) AS SIGNED)",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Debug panel",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "${DS_MYSQL}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "center",
+            "displayMode": "auto",
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 12,
+        "x": 12,
+        "y": 25
+      },
+      "id": 8,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "9.3.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_MYSQL}"
+          },
+          "dimensions": {},
+          "editorMode": "code",
+          "expression": "",
+          "format": "table",
+          "id": "",
+          "label": "",
+          "matchExact": true,
+          "metricEditorMode": 0,
+          "metricName": "",
+          "metricQueryType": 0,
+          "namespace": "",
+          "period": "",
+          "queryMode": "Metrics",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n\tROUND(AVG(pre_conv.`Number of Tickets`), 2) AS 'Average Trial Tickets per project',\r\n\tROUND(AVG(post_conv.`Number of Tickets`), 2) AS 'Average Production Tickets per project'\r\nFROM\r\n\t(\r\n\tSELECT\r\n\t\tjt.`epic` AS 'Epic Ticket',\r\n\t\tCOUNT(*) AS 'Number of Tickets'\r\n\tFROM\r\n\t\tgrafana_data.jira_tickets jt\r\n\tWHERE\r\n\t\tjt.ticketnumber LIKE 'CONV-%'\r\n\t\tAND jt.type = 'Pre Conversion Data Fix'\r\n\t\tAND jt.status IN ('Done', 'No Work Required')\r\n\t\tAND jt.`epic` IS NOT NULL\r\n\tGROUP BY\r\n\t\tjt.epic) AS pre_conv\r\n\tLEFT JOIN\r\n\t(\r\n\tSELECT\r\n\t\tjt.`epic` AS 'Epic Ticket',\r\n\t\tCOUNT(*) AS 'Number of Tickets'\r\n\tFROM\r\n\t\tgrafana_data.jira_tickets jt\r\n\tWHERE\r\n\t\tjt.ticketnumber LIKE 'CONV-%'\r\n\t\tAND jt.type = 'Post Conversion Data Fix'\r\n\t\tAND jt.status IN ('Done', 'No Work Required')\r\n\t\t\tAND jt.`epic` IS NOT NULL\r\n\t\tGROUP BY\r\n\t\t\tjt.epic) AS post_conv \r\n\tON pre_conv.`Epic Ticket` = post_conv.`Epic Ticket`;",
+          "refId": "A",
+          "region": "default",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "sqlExpression": "",
+          "statistic": "Average"
+        }
+      ],
+      "title": "Average Number of Trial and Production tickets per project",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "${DS_MYSQL}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 28
+      },
+      "id": 24,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "9.3.2",
+      "targets": [
+        {
+          "dataset": "grafana_data",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_MYSQL}"
+          },
+          "dimensions": {},
+          "editorMode": "code",
+          "expression": "",
+          "format": "table",
+          "id": "",
+          "label": "",
+          "matchExact": true,
+          "metricEditorMode": 0,
+          "metricName": "",
+          "metricQueryType": 0,
+          "namespace": "",
+          "period": "",
+          "queryMode": "Metrics",
+          "rawQuery": true,
+          "rawSql": "SELECT SUM(IF(jt.resolved > 0, jw.duration/3600 , 0 )) AS 'Trial Ticket Hours spent'\r\nFROM grafana_data.jira_worklogs jw \r\nLEFT JOIN grafana_data.jira_tickets jt ON jw.jiraticketid = jt.id\r\nWHERE jt.ticketnumber LIKE 'CONV-%'\r\nAND jt.`type` LIKE 'Pre Conversion Data Fix%'\r\nAND jt.source_systems IN ($SourceSystem)\r\nAND status IN ($Status)\r\nAND CAST(CONCAT(YEAR(FROM_UNIXTIME(jt.created)), IF(WEEK(FROM_UNIXTIME(jt.created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(jt.created))), WEEK(FROM_UNIXTIME(jt.created)))) AS SIGNED) >= CAST(CONCAT('$FROM_YEAR', LPAD('$FROM_ISO_WEEK', 2, '0')) AS SIGNED)\r\nAND CAST(CONCAT(YEAR(FROM_UNIXTIME(jt.created)), IF(WEEK(FROM_UNIXTIME(jt.created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(jt.created))), WEEK(FROM_UNIXTIME(jt.created)))) AS SIGNED) <= CAST(CONCAT('$TO_YEAR', LPAD('$TO_ISO_WEEK', 2, '0')) AS SIGNED)",
+          "refId": "A",
+          "region": "default",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "sqlExpression": "",
+          "statistic": "Average",
+          "table": "jira_tickets"
+        },
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_MYSQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT SUM(IF(jt.resolved > 0, jw.duration/3600 , 0 )) AS 'Production Ticket Hours spent'\r\nFROM grafana_data.jira_worklogs jw \r\nLEFT JOIN grafana_data.jira_tickets jt ON jw.jiraticketid = jt.id\r\nWHERE jt.ticketnumber LIKE 'CONV-%'\r\nAND jt.`type` LIKE 'Post Conversion Data Fix%'\r\nAND jt.source_systems IN ($SourceSystem)\r\nAND status IN ($Status)\r\nAND CAST(CONCAT(YEAR(FROM_UNIXTIME(jt.created)), IF(WEEK(FROM_UNIXTIME(jt.created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(jt.created))), WEEK(FROM_UNIXTIME(jt.created)))) AS SIGNED) >= CAST(CONCAT('$FROM_YEAR', LPAD('$FROM_ISO_WEEK', 2, '0')) AS SIGNED)\r\nAND CAST(CONCAT(YEAR(FROM_UNIXTIME(jt.created)), IF(WEEK(FROM_UNIXTIME(jt.created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(jt.created))), WEEK(FROM_UNIXTIME(jt.created)))) AS SIGNED) <= CAST(CONCAT('$TO_YEAR', LPAD('$TO_ISO_WEEK', 2, '0')) AS SIGNED)",
+          "refId": "B",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Total Trial Hours spent on $SourceSystem ",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "${DS_MYSQL}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 28
+      },
+      "id": 26,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "9.3.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_MYSQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "Select 'Complete and Udder Destruction'",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "What do you get when a cow jumps over a barbed wire fence?",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "${DS_MYSQL}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 36
+      },
+      "id": 12,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "text": {
+          "titleSize": 21
+        }
+      },
+      "pluginVersion": "9.3.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_MYSQL}"
+          },
+          "dimensions": {},
+          "editorMode": "code",
+          "expression": "",
+          "format": "table",
+          "id": "",
+          "label": "",
+          "matchExact": true,
+          "metricEditorMode": 0,
+          "metricName": "",
+          "metricQueryType": 0,
+          "namespace": "",
+          "period": "",
+          "queryMode": "Metrics",
+          "rawQuery": true,
+          "rawSql": "SELECT source_systems, COUNT(ticketnumber) AS 'Trial Tickets Raised', name, assignee, type, FROM_UNIXTIME(jt.created), status, FROM_UNIXTIME(resolved), epic\r\nFROM grafana_data.jira_tickets jt\r\nWHERE ticketnumber LIKE 'CONV-%'\r\nAND `type` LIKE 'Pre Conversion Data Fix%'\r\nAND epic IS NOT NULL\r\nAND source_systems <> ''\r\nAND source_systems IN ('$SourceSystem')\r\nAND\r\n\tCAST(CONCAT(YEAR(FROM_UNIXTIME(jt.created)), IF(WEEK(FROM_UNIXTIME(jt.created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(jt.created))), WEEK(FROM_UNIXTIME(jt.created)))) AS SIGNED) >= CAST(CONCAT('$FROM_YEAR', LPAD('$FROM_ISO_WEEK', 2, '0')) AS SIGNED)\r\n\tAND \r\n\tCAST(CONCAT(YEAR(FROM_UNIXTIME(jt.created)), IF(WEEK(FROM_UNIXTIME(jt.created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(jt.created))), WEEK(FROM_UNIXTIME(jt.created)))) AS SIGNED) <= CAST(CONCAT('$TO_YEAR', LPAD('$FROM_ISO_WEEK', 2, '0')) AS SIGNED)\r\nGROUP BY source_systems",
+          "refId": "A",
+          "region": "default",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "sqlExpression": "",
+          "statistic": "Average"
+        },
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_MYSQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(ticketnumber) AS 'Production Tickets raised', source_systems, `type` FROM grafana_data.jira_tickets\r\nWHERE ticketnumber LIKE 'CONV-%'\r\nAND `type` LIKE 'Post Conversion Data Fix%'\r\nAND source_systems LIKE '$SourceSystem'\r\nAND\r\n\tCAST(CONCAT(YEAR(FROM_UNIXTIME(created)), IF(WEEK(FROM_UNIXTIME(created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(created))), WEEK(FROM_UNIXTIME(created)))) AS SIGNED) >= CAST(CONCAT('$FROM_YEAR', LPAD('$FROM_ISO_WEEK', 2, '0')) AS SIGNED)\r\n\tAND \r\n\tCAST(CONCAT(YEAR(FROM_UNIXTIME(created)), IF(WEEK(FROM_UNIXTIME(created)) < 10, CONCAT('0', WEEK(FROM_UNIXTIME(created))), WEEK(FROM_UNIXTIME(created)))) AS SIGNED) <= CAST(CONCAT('$TO_YEAR', LPAD('$TO_ISO_WEEK', 2, '0')) AS SIGNED)\r\n",
+          "refId": "B",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "$SourceSystem Trial/Production Tickets raised from $FROM_YEAR W$FROM_ISO_WEEK to $TO_YEAR W$TO_ISO_WEEK",
+      "type": "gauge"
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 37,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "datasource": {
+          "type": "mysql",
+          "uid": "${DS_MYSQL}"
+        },
+        "definition": "SELECT DISTINCT jt.source_systems as 'Source System' FROM grafana_data.jira_tickets jt\nWHERE source_systems != ''\nAND source_systems not in ('Advatnage', 'All', 'no', 'other', 'N/A', 'cascadiaequine', 'ElizabethBishop', 'AvantikaKarki', \"MisheScott\", 'AvantikaKarki', 'psivpm', 'ginger')\norder by source_systems",
+        "description": "",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Source System",
+        "multi": true,
+        "name": "SourceSystem",
+        "options": [],
+        "query": "SELECT DISTINCT jt.source_systems as 'Source System' FROM grafana_data.jira_tickets jt\nWHERE source_systems != ''\nAND source_systems not in ('Advatnage', 'All', 'no', 'other', 'N/A', 'cascadiaequine', 'ElizabethBishop', 'AvantikaKarki', \"MisheScott\", 'AvantikaKarki', 'psivpm', 'ginger')\norder by source_systems",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "mysql",
+          "uid": "${DS_MYSQL}"
+        },
+        "definition": "SELECT DISTINCT YEAR(FROM_UNIXTIME(created)) AS `Year` FROM grafana_data.jira_tickets jt ORDER BY `Year`",
+        "hide": 0,
+        "includeAll": false,
+        "label": "From Year",
+        "multi": false,
+        "name": "FROM_YEAR",
+        "options": [],
+        "query": "SELECT DISTINCT YEAR(FROM_UNIXTIME(created)) AS `Year` FROM grafana_data.jira_tickets jt ORDER BY `Year`",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "mysql",
+          "uid": "${DS_MYSQL}"
+        },
+        "definition": "SELECT DISTINCT WEEK(FROM_UNIXTIME(created)) AS `Week` FROM grafana_data.jira_tickets jt ORDER BY `Week`",
+        "hide": 0,
+        "includeAll": false,
+        "label": "From ISO Week",
+        "multi": false,
+        "name": "FROM_ISO_WEEK",
+        "options": [],
+        "query": "SELECT DISTINCT WEEK(FROM_UNIXTIME(created)) AS `Week` FROM grafana_data.jira_tickets jt ORDER BY `Week`",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "mysql",
+          "uid": "${DS_MYSQL}"
+        },
+        "definition": "SELECT DISTINCT YEAR(FROM_UNIXTIME(created)) AS `Year` FROM grafana_data.jira_tickets jt ORDER BY `Year`",
+        "hide": 0,
+        "includeAll": false,
+        "label": "To Year",
+        "multi": false,
+        "name": "TO_YEAR",
+        "options": [],
+        "query": "SELECT DISTINCT YEAR(FROM_UNIXTIME(created)) AS `Year` FROM grafana_data.jira_tickets jt ORDER BY `Year`",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "mysql",
+          "uid": "${DS_MYSQL}"
+        },
+        "definition": "SELECT DISTINCT WEEK(FROM_UNIXTIME(created)) AS `Week` FROM grafana_data.jira_tickets jt ORDER BY `Week`",
+        "hide": 0,
+        "includeAll": false,
+        "label": "To ISO Week",
+        "multi": false,
+        "name": "TO_ISO_WEEK",
+        "options": [],
+        "query": "SELECT DISTINCT WEEK(FROM_UNIXTIME(created)) AS `Week` FROM grafana_data.jira_tickets jt ORDER BY `Week`",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "mysql",
+          "uid": "${DS_MYSQL}"
+        },
+        "definition": "SELECT DISTINCT status FROM grafana_data.jira_tickets WHERE `type` IN (\"Pre Conversion Data Fix\", \"Post Conversion Data Fix\");",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Status",
+        "multi": true,
+        "name": "Status",
+        "options": [],
+        "query": "SELECT DISTINCT status FROM grafana_data.jira_tickets WHERE `type` IN (\"Pre Conversion Data Fix\", \"Post Conversion Data Fix\");",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "2022-01-02T00:00:00.000Z",
+    "to": "2023-02-14T21:05:32.900Z"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Des_Dashboard",
+  "uid": "7X3sS2wMk",
+  "version": 143,
+  "weekStart": ""
+}
